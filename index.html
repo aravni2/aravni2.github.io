@@ -1,0 +1,467 @@
+<html>
+<script src='https://d3js.org/d3.v5.min.js'></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3-annotation/2.5.1/d3-annotation.min.js"></script>
+<style> 
+    rect {
+        fill: lightblue; 
+        stroke: blue;
+        } 
+    
+    #tooltip {
+        opacity: 0;
+        position:absolute;
+        text-align: center;
+        width: 150px;
+        height: 100px;
+        background-color: whitesmoke;
+        color: black;
+        border: 0px;
+        border-radius: 10px;
+        /* display: none;  */
+        
+    }
+
+    #slider {
+    width : 1500px;
+    }
+    #sliderdiv{
+    padding-left: 50px;
+    }
+
+
+</style>
+
+<body onload='init()'>
+
+    <!-- <svg class="chart"
+    width="860"
+    height="500"
+    viewBox="0 0 860 500"
+    preserveAspectRatio="xMinYMin meet"></svg> -->
+
+<div id="textbox"></div>    
+<svg class="chart"></svg>
+<div id="sliderbar"></div>
+<div id="tooltip"></div> 
+<button id="bt1" type="button" onclick="">Click to Advance</button>
+<div id="sliderdiv"><input id="slider" type="range" min="1" max="109" step="1" value="1"/></div>
+<!-- <button id="bt1" type="button" onclick="createGraph(dataslice,data,index)">Click Me!</button> -->
+<!-- <div class="bobswealth"></div>  -->
+
+<script>
+d3.select("svg").attr("height",window.innerHeight-100).attr("width",window.innerWidth-100)
+var gwidth = window.innerWidth-200 //scale for width of chart in pixels
+var gheight = window.innerHeight-200//scale for height of chart in pixels
+let margin = 50;
+var index = 50;
+var clickcount = 0
+
+const type = d3.annotationCalloutElbow;
+//async function to first call data download before moving to next functions
+async function init() {
+    const data = await d3.csv('https://raw.githubusercontent.com/aravni2/CS416-Visual-Narrative-Project/main/SP500%20DJIA%20and%20GDP%20Cleaned.csv'
+    ); //await data load
+    console.log(data)
+    let xs = d3.scaleLinear().domain(d3.extent(data,d=>+d.Year)).range([0,gwidth]);
+    let ys = d3.scaleLinear().domain([0,d3.max(data,d=>+d['snp_adj'])]).range([gheight,0]);
+    console.log(d3.max(data,d=>+d['snp_adj']))
+
+    let y_axis = d3.axisLeft(ys).tickFormat(d3.format("$~s")); //set up y_axis ticks and number format
+    let x_axis = d3.axisBottom(xs)
+        .ticks(20)
+        .tickFormat(d3.format("")); //setup x_axis ticks and number formats
+
+    var tooltip = d3.select("#tooltip"); 
+    var dataslice = data.slice(0,index);
+    var slider = d3.select("#slider")
+    // d3.select(".sliderdiv").attr("width",gwidth)
+    console.log(dataslice);
+    //bind data load to scatter plots and scale radii to adjusted
+    function createGraph(dataslice,data,index){
+    if (clickcount < 2){ slider.style("opacity",0);}
+    else {slider.style("opacity",1);}
+
+    d3.select('.chart')
+        .append('g').attr("transform","translate("+margin+","+margin+")") //start at canvas
+        .selectAll("circle")
+        .data(dataslice)
+        .enter()
+        .append("circle")
+        .attr("cx",(d,i)=> xs(+d.Year)) //cx
+        .attr("cy", (d)=> ys(+d['snp_adj'])) //cy
+        .attr("r",4) //need to convert data values of radii from string to integer (otherwise concatenation)
+        .on("mouseover",function(d,i) {
+
+            tooltip.style("opacity",1)
+            .style("left",(d3.event.pageX)+10+"px")
+            .style("top",(d3.event.pageY)+"px")
+            // .html("Dow Jones Industrial Average: <strong>"+d['snp_adj']+"<strong/>\n Change: <strong/><span style='color: green;'>"+d['snp_growth'] )
+            .html(function() { 
+                if (+d['snp_growth'] > 0 ) {
+                    // console.log(d['snp_growth'])
+                    return "Year:" +d.Year+ "<br/>SP500 Average: <strong>"+d['snp_adj']+"<strong/> <br>Change: <strong/><span style='color: green;'>"+d['snp_growth']+"%<br/><span style='color: black;'>Bobs Wealth: <span style='color: green;'>$"+d['bobs_money_compounded'] ;
+            } else if (+d['snp_growth'] < 0 ) {
+                    return "Year:" +d.Year+ "<br/>SP500 Average: <strong>"+d['snp_adj']+"<strong/><br> Change: <strong/><span style='color: red;'>"+d['snp_growth']+"%<br/><span style='color: black;'>Bobs Wealth: <span style='color: red;'>$"+d['bobs_money_compounded']  ;
+            } else {
+                    return "Year:" +d.Year+ "<br/>SP500 Average: <strong>"+d['snp_adj']+"<strong/><br> Change: <strong/><span style='color: black;'>"+d['snp_growth']+"%<br/><span style='color: black;'>Bobs Wealth: <span style='color: black;'>$"+d['bobs_money_compounded'] ;
+            }
+    });
+        d3.select(this).attr("r",8);}
+        )
+      
+        .on("mouseout",function(d){
+            tooltip.style("opacity",0);
+            d3.select(this).attr("r",4);
+        });
+
+
+    
+    var line = d3.line()
+        .x(d=>xs(+d.Year))
+        .y(d=>ys(+d['snp_adj']));
+
+
+    // append line path to svg to connect dots
+    d3.select("svg").append("path")
+        .attr("transform","translate("+margin+","+margin+")")
+        .datum(dataslice)
+        .transition()
+        .duration(1000)
+        .attr("fill","none")
+        .attr("stroke","steelblue")
+        .attr("stroke-width",1)
+        .attr("d", line)
+        .attr("class", "LineDraw");
+    
+      
+    // needed multiple if statements to guarantee annotations don't come in piecewise
+    // const type = d3.annotationCalloutElbow
+    if (index>=0){
+        var annotations = [{
+    note: {
+        label: "Although he has no money, he will soon scrape enough together to hit it big",
+        title: "Bob is Born"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 1915, "snp_adj": 250},
+    dy: -60,
+    dx: 60
+    }]};
+    if (index >= 15) {
+    var annotations = [
+    {
+        note: {
+        label: "Although he has no money, he will soon scrape enough together to hit it big",
+        title: "Bob is Born"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 1915, "snp_adj": 250},
+    dy: -60,
+    dx: 60
+    },
+    {
+    note: {
+        label: "Bob invests $250 during the peak of the roaring twenties. Only to lose > 70% of his wealth in the coming Great depression",
+        title: "The Great Depression"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 1929, "snp_adj": 463},
+    dy: -60,
+    dx: 60
+    }]
+    } 
+    if (index > 73) {
+    var annotations = [
+    {
+    note: {
+        label: "Bob invests $250 during the peak of the roaring twenties. Only to lose > 70% of his wealth in the coming Great depression",
+        title: "The Great Depression"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 1929, "snp_adj": 463},
+    dy: -60,
+    dx: 60
+    },
+    {
+    note: {
+        label: "Bob invests $5,000 right before the 1987 flash crash. Only to lose another 14% in the following year",
+        title: "1987 Flash Crash"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 1987, "snp_adj": 769},
+    dy: -60,
+    dx: -60}]}
+    if (index >= 86) {
+    var annotations = [
+    {
+    note: {
+        label: "Bob invests $250 during the peak of the roaring twenties. Only to lose > 70% of his wealth in the coming Great depression",
+        title: "The Great Depression"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 1929, "snp_adj": 463},
+    dy: -60,
+    dx: 60
+    },
+    {
+    note: {
+        label: "Bob invests $5,000 right before the 1987 flash crash. Only to lose another 14% in the following year",
+        title: "1987 Flash Crash"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 1987, "snp_adj": 769},
+    dy: -60,
+    dx: -60},
+    {
+    note: {
+        label: "Bob feels computers are the way of the future.\n Bob invests $10,000 during the .com bubble peak and loses 38% in the next 3 years",
+        title: "The Dot Com Bubble"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 2000, "snp_adj": 2525},
+    dy: -40,
+    dx: -150}]}
+    if (index >= 93) {
+    var annotations = [
+    {
+    note: {
+        label: "Bob invests $250 during the peak of the roaring twenties. Only to lose > 70% of his wealth in the coming Great depression",
+        title: "The Great Depression"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 1929, "snp_adj": 463},
+    dy: -60,
+    dx: 60
+    },
+    {
+    note: {
+        label: "Bob invests $5,000 right before the 1987 flash crash. Only to lose another 14% in the following year",
+        title: "1987 Flash Crash"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 1987, "snp_adj": 769},
+    dy: -60,
+    dx: -60},
+    {
+    note: {
+        label: "Bob feels computers are the way of the future.\n Bob invests $10,000 during the .com bubble peak and loses 38% in the next 3 years",
+        title: "The Dot Com Bubble"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 2000, "snp_adj": 2525},
+    dy: -40,
+    dx: -150},
+    {
+    note: {
+        label: "Recovering from his .com loss Bob invests $10,000 at the peak of the housing bubble",
+        title: "The Housing Crisis"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 2007, "snp_adj": 2170},
+    dy: -120,
+    dx: -30}]
+    }
+    if (index >=107) {
+        var annotations = [
+        {
+    note: {
+        label: "Bob invests $250 during the peak of the roaring twenties. Only to lose > 70% of his wealth in the coming Great depression",
+        title: "The Great Depression"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 1929, "snp_adj": 463},
+    dy: -60,
+    dx: 60
+    },
+    {
+    note: {
+        label: "Bob invests $5,000 right before the 1987 flash crash. Only to lose another 14% in the following year",
+        title: "1987 Flash Crash"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 1987, "snp_adj": 769},
+    dy: -60,
+    dx: -60},
+    {
+    note: {
+        label: "Bob feels computers are the way of the future.\n Bob invests $10,000 during the .com bubble peak and loses 38% in the next 3 years",
+        title: "The Dot Com Bubble"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 2000, "snp_adj": 2525},
+    dy: -40,
+    dx: -150},
+    {
+    note: {
+        label: "Recovering from his .com loss Bob invests $10,000 at the peak of the housing bubble",
+        title: "The Housing Crisis"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 2007, "snp_adj": 2170},
+    dy: -120,
+    dx: -30},
+    {
+    note: {
+        label: "Bob feels Covid is over and invests another $10,000 at the end of 2021",
+        title: "Post-Covid Inflation bubble"
+    },
+    //can use x, y directly instead of data
+    data: { Year: 2021, "snp_adj": 4797},
+    dy: 60,
+    dx: -60}]
+    }
+
+    
+    // create variables for animations
+    const makeAnnotations = d3.annotation()
+    .editMode(true)
+    //also can set and override in the note.padding property
+    //of the annotation object
+    .notePadding(15)
+    .type(type)
+    //accessors & accessorsInverse not needed
+    //if using x, y in annotations JSON
+    // DON'T FORGET MARGINS!!!!
+    .accessors({
+        x: d => xs(d.Year)+50,
+        y: d => ys(d['snp_adj'])+50
+    })
+    .accessorsInverse({
+        Year: d => x.invert(d.x),
+        "DJIA Avg. Adj": d => y.invert(d.y)
+    })
+    .annotations(annotations);
+
+
+    d3.select("svg")
+    .append("g")
+    .attr("class", "annotation-group")
+    .call(makeAnnotations);
+// }
+    // add infobox
+    d3.select('.chart')
+        .append("g").attr("transform","translate("+margin+","+margin+")").selectAll("rect")
+        .data(dataslice).enter().append("rect")
+        .attr("height",200)
+        .attr("width",400)
+        .attr("x",50)
+        .attr("y",50);
+
+  
+    // add text to infobox
+    d3.select('.chart').append("g").attr("transform","translate("+100+","+100+")")
+        .append("foreignObject")
+        .attr("width", 400)
+        .attr("height", 200)
+        .append("xhtml:body")
+        .style("font", "14px 'Helvetica Neue'")
+        .data(dataslice)
+        .html(function (d,i) {
+            
+            if (clickcount == 0 ) {
+                    return "Bob's Money: a cautionary tale<br> Bob was born in 1915 and scraped together $100 to invest during the start of the great depression"
+                    // "Year:" +dataslice[dataslice.length -1]['bobs_money_compounded']+ "<br>SP500 Average: <strong>" ;
+            } else if (clickcount == 1 ) {
+                    return "Year:" +d.Year+ "<br/>SP500 Average: <strong>"+d['snp_adj']+"<strong/><br> Change: <strong/><span style='color: red;'>"+d['snp_growth']+"%<br/><span style='color: black;'>Bobs Wealth: <span style='color: red;'>$"+d['bobs_money_compounded']  ;
+            } else if (clickcount == 2) {
+                    return "Year:" +d.Year+ "<br/>SP500 Average: <strong>"+d['snp_adj']+"<strong/><br> Change: <strong/><span style='color: black;'>"+d['snp_growth']+"%<br/><span style='color: black;'>Bobs Wealth: <span style='color: black;'>$"+d['bobs_money_compounded'] ;
+            };});
+
+    // d3.select('.bobswealth').append("text").html(function (d,i) {return "testing "+d3.max(dataslice,d=>+d['snp_adj']);})
+
+    
+}
+
+
+    // finish setting y axis
+    d3.select('svg').append("g")
+        .style("font-size", "16px")
+        .attr("transform","translate("+margin+","+margin+")")
+        .call(y_axis);  //create y axis
+    
+    // create x axis
+    d3.select('svg').append("g")
+        .style("font-size", "14px")
+        .attr("transform","translate("+margin+","+(gheight+margin)+")")
+        .call(x_axis); //create x axis using y axis height to shift downwards
+
+    // change tick color
+    d3.select("svg").selectAll(".tick text").attr("fill", "grey");
+
+    // add horizontal grid lines
+    d3.select("svg").selectAll("yaxis")
+        .data(ys.ticks(7).slice(1))
+        .join("line")
+        .attr("x1",margin)
+        .attr("x2",gwidth+margin)
+        .attr("y1",(d)=>ys(d)+50)
+        .attr("y2",(d)=>ys(d)+50)
+        .attr("stroke","grey")
+        .attr("stroke-width",.5);
+    
+
+
+    // add title axis
+    d3.select(".chart")
+        .append("text")
+        .attr("x", margin+gwidth/2)
+        .attr("y",margin)
+        .style("font-size", "20px")
+        .style("font-weight", "bold")
+        .style("font-family", "sans-serif")
+        .text("SP500 Avg by year");
+
+    
+    // add button functionality
+    d3.select("#bt1").on("click", (d,i) => {
+        index += 50;
+        clickcount+=1;
+        console.log(clickcount)
+        var dataslice = data.slice(0, index);
+        console.log(index);
+        console.log(dataslice);
+        d3.select(".annotations").remove();
+        d3.select(".chart").selectAll("circle").remove();
+        // d3.select("path").remove();
+        d3.select(".chart").select(".LineDraw").remove();
+        d3.select(".bobswealth").html("");
+        createGraph(dataslice,data,index);
+
+    })
+
+    
+    d3.select("#slider").attr("width",gwidth).on("input", function(d,i) {
+        index = this.value;
+        console.log(this.value)
+        console.log(index)
+        dataslice = data.slice(0, index);
+        console.log(dataslice)
+        d3.select(".annotations").remove();
+        d3.select(".chart").selectAll("circle").remove();
+        // d3.select("path").remove();
+        d3.select(".chart").select(".LineDraw").remove();
+        d3.select(".bobswealth").html("");
+        // d3.select(line).remove();
+        
+
+        createGraph(dataslice,data,index);
+    })
+
+    // add graph updating
+    function updateGraph(newdata,data,index) {
+        var dat = d3.select(".chart")
+        .data(dataslice);
+        dat.exit().remove();
+        dat.enter()
+        .append("g")
+        .attr("class","dat")
+        .merge(dat)
+
+    }
+
+    createGraph(dataslice,data,index);
+}
+</script>
+
+</body>
+</html>
