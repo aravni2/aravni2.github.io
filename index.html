@@ -204,7 +204,7 @@ async function init() {
     },
     {
     note: {
-        label: "Bob invests his first $250 during the peak of the roaring twenties. Only to lose > 70% of his wealth in the coming Great depression",
+        label: "Bob invests his first $250 during the peak of the roaring twenties. Only to lose over 70% of his wealth in the coming Great depression",
         title: "The Great Depression"
     },
     //can use x, y directly instead of data
@@ -227,7 +227,7 @@ async function init() {
     },
     {
     note: {
-        label: "Bob invests his first $250 during the peak of the roaring twenties. Only to lose > 70% of his wealth in the coming Great depression",
+        label: "Bob invests his first $250 during the peak of the roaring twenties. Only to lose over 70% of his wealth in the coming Great depression",
         title: "The Great Depression"
     },
     //can use x, y directly instead of data
@@ -258,7 +258,7 @@ async function init() {
     },
     {
     note: {
-        label: "Bob invests his first $250 during the peak of the roaring twenties. Only to lose > 70% of his wealth in the coming Great depression",
+        label: "Bob invests his first $250 during the peak of the roaring twenties. Only to lose over 70% of his wealth in the coming Great depression",
         title: "The Great Depression"
     },
     //can use x, y directly instead of data
@@ -298,7 +298,7 @@ async function init() {
     },
     {
     note: {
-        label: "Bob invests his first $250 during the peak of the roaring twenties. Only to lose > 70% of his wealth in the coming Great depression",
+        label: "Bob invests his first $250 during the peak of the roaring twenties. Only to lose over 70% of his wealth in the coming Great depression",
         title: "The Great Depression"
     },
     //can use x, y directly instead of data
@@ -326,7 +326,7 @@ async function init() {
     dx: -150},
     {
     note: {
-        label: "Recovering from his .com loss Bob invests $10,000 at the peak of the housing bubble",
+        label: "Recovering from his .com loss Bob invests $10,000 at the peak of the housing bubble, a 14% loss in the coming years",
         title: "The Housing Crisis"
     },
     //can use x, y directly instead of data
@@ -348,7 +348,7 @@ async function init() {
     },
         {
     note: {
-        label: "Bob invests his first $250 during the peak of the roaring twenties. Only to lose > 70% of his wealth in the coming Great depression",
+        label: "Bob invests his first $250 during the peak of the roaring twenties. Only to lose over 70% of his wealth in the coming Great depression",
         title: "The Great Depression"
     },
     //can use x, y directly instead of data
@@ -376,7 +376,7 @@ async function init() {
     dx: -150},
     {
     note: {
-        label: "Recovering from his .com loss Bob invests $10,000 at the peak of the housing bubble",
+        label: "Recovering from his .com loss Bob invests $10,000 at the peak of the housing bubble, a 14% loss in the coming years",
         title: "The Housing Crisis"
     },
     //can use x, y directly instead of data
@@ -385,7 +385,7 @@ async function init() {
     dx: -30},
     {
     note: {
-        label: "Bob feels Covid is over and invests another $10,000 at the end of 2021",
+        label: "Bob feels Covid is over and invests another $10,000 at the end of 2021, enduring another 12% loss",
         title: "Post-Covid Inflation bubble"
     },
     //can use x, y directly instead of data
@@ -419,6 +419,8 @@ async function init() {
     d3.select("svg")
     .append("g")
     .attr("class", "annotation-group")
+    .attr("fill","white")
+
     .call(makeAnnotations);
 // }
     // add infobox
@@ -452,7 +454,7 @@ async function init() {
                     return "<font size = 7><u> Bob's Money</u><font/><br><a><font size= 3> Bob learns from an early age the power of the markets. He invests $250 and lets it ride<br><br>Despite losing over 70% of his wealth in the great depression, the following decades grow his nest egg into the $1000's<font/><br><br><strong>End Year: "
                         +d3.max(dataslice,d=>+d['Year'])+"<br>Bob's Total Wealth:<strong><span style='color: green;'> $"+dataslice[dataslice.length -1]['bobs_money_compounded']+"<br><span style='color: black;'>Bob's Total Investment Growth: " +dataslice[dataslice.length -1]['bobs_total_growth']+ "%";
             } else if (clickcount == 2) {
-                    return "<font size = 7><u> Bob's Money</u><font/><br><a><font size= 3> Bob makes several larger investments in the coming decades: $5,000 during the flash crash, and $10,000 during the dot com bubble, and $10,000 in the housing bubble <br><br>Undetered, Bob continues to hold steady and his wealth has surpassed $600,000!!! <font/><br><br><strong>End Year: "
+                    return "<font size = 7><u> Bob's Money</u><font/><br><a><font size= 3> Bob makes several larger investments in the coming decades: $5,000 during the flash crash, $10,000 during the dot com bubble, and $10,000 in the housing bubble <br><br>Undetered, Bob continues to hold steady and his wealth has surpassed $600,000!!! <font/><br><br><strong>End Year: "
                         +d3.max(dataslice,d=>+d['Year'])+"<br>Bob's Total Wealth:<strong><span style='color: green;'> $"+dataslice[dataslice.length -1]['bobs_money_compounded']+"<br><span style='color: black;'>Bob's Total Investment Growth: " +dataslice[dataslice.length -1]['bobs_total_growth']+ "%";
             }
             else if (clickcount > 2) {
