@@ -109,7 +109,7 @@ async function init() {
                     return "Year:" +d.Year+ "<br/><strong>S&P500 Adj. Average: "+d['snp_adj']+"<strong/><br> Change: <strong/><span style='color: black;'>"+d['snp_growth']+"%<br/><span style='color: black;'>Bobs Wealth: <span style='color: black;'>$"+d['bobs_money_compounded'] ;
             }
     });
-    
+
         d3.select(this).attr("r",8);}
         )
       
@@ -445,7 +445,7 @@ async function init() {
         .html(function (d,i) {
             // Bob was born in 1915 and scraped together $100 to invest during the start of the great depression
             if (clickcount == 0 ) {
-                    return "<font size = 7><u> Bob's Money</u><font/><br><a><font size= 3> This story follows Bob and his investments. He lives an extroadinarly long life and continually invests in the market at the worst financial times in history<br><br>Nevertheless, he trusts in compounding interest and never withdrawls his money, he just lets it grow.<font/><br><br><strong>End Year: "
+                    return "<font size = 7><u> Bob's Money</u><font/><br><a><font size= 3> This story follows Bob and his investments. He lives an extroadinarly long life and continually invests in the market at the worst financial times in history<br><br>Nevertheless, he trusts in compounding dividends and never withdrawls his money, he just lets it grow.<font/><br><br><strong>End Year: "
                         +d3.max(dataslice,d=>+d['Year'])+"<br>Bob's Total Wealth:  <strong><span style='color: green;'> $"+dataslice[dataslice.length -1]['bobs_money_compounded']+"<br><span style='color: black;'>Bob's Total Investment Growth: " +dataslice[dataslice.length -1]['bobs_total_growth']+ "%";
                     // "Year:" +dataslice[dataslice.length -1]['bobs_money_compounded']+ "<br>SP500 Average: <strong>" ;
             } else if (clickcount == 1 ) {
@@ -456,7 +456,7 @@ async function init() {
                         +d3.max(dataslice,d=>+d['Year'])+"<br>Bob's Total Wealth:<strong><span style='color: green;'> $"+dataslice[dataslice.length -1]['bobs_money_compounded']+"<br><span style='color: black;'>Bob's Total Investment Growth: " +dataslice[dataslice.length -1]['bobs_total_growth']+ "%";
             }
             else if (clickcount > 2) {
-                    return "<font size = 7><u> Bob's Money</u><font/><br><a><font size= 3> Bob makes one last $10,000 investment during the inflation bubble <br><br>While this is still ongoing and Bob may not know what comes next, he accrued almost $2 milllion and is confident he can weather any storm <font/><br><br><strong>End Year: "
+                    return "<font size = 7><u> Bob's Money</u><font/><br><a><font size= 3> Bob makes one last $10,000 investment during the inflation bubble in 2021 <br><br>While this is still ongoing and Bob may not know what comes next, he accrued almost $2 milllion and is confident he can weather any storm <font/><br><br><strong>End Year: "
                         +d3.max(dataslice,d=>+d['Year'])+"<br>Bob's Money:<strong><span style='color: green;'> $"+dataslice[dataslice.length -1]['bobs_money_compounded']+"<br><span style='color: black;'>Bob's Total Investment Growth: " +dataslice[dataslice.length -1]['bobs_total_growth']+ "%";
             };
             });
@@ -465,7 +465,7 @@ async function init() {
 
     // d3.select('.bobswealth').append("text").html(function (d,i) {return "testing "+d3.max(dataslice,d=>+d['snp_adj']);})
 
-};
+// };
 
 
     // finish setting y axis
@@ -554,7 +554,7 @@ async function init() {
     //     .merge(dat);
 
     // };
-
+};
     createGraph(dataslice,data,index);
     
 };
